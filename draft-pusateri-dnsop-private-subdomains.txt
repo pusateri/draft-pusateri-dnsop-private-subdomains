@@ -4,8 +4,8 @@
 
 DNSOP Working Group                                          T. Pusateri
 Internet-Draft                                              Unaffiliated
-Intended status: Experimental                              March 9, 2019
-Expires: September 10, 2019
+Intended status: Experimental                             March 11, 2019
+Expires: September 12, 2019
 
 
                          Private DNS Subdomains
@@ -34,7 +34,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 10, 2019.
+   This Internet-Draft will expire on September 12, 2019.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Pusateri               Expires September 10, 2019               [Page 1]
+Pusateri               Expires September 12, 2019               [Page 1]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
@@ -76,9 +76,10 @@ Table of Contents
    6.  Encrypted Resource Record (ENCR)  . . . . . . . . . . . . . .   8
      6.1.  Encrypted Resource Record RDATA format  . . . . . . . . .   8
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .   9
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .   9
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  10
 
 1.  Introduction
@@ -103,16 +104,19 @@ Table of Contents
    of privacy protection for an individual's devices or those of a
    defined group sharing a common purpose.
 
-   The additional privacy is achieved by creating private subdomains
-   that require a private key for bidirectional access to DNS queries
-   and responses for the zone.
 
 
 
-Pusateri               Expires September 10, 2019               [Page 2]
+
+
+Pusateri               Expires September 12, 2019               [Page 2]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
+
+   The additional privacy is achieved by creating private subdomains
+   that require a private key for bidirectional access to DNS queries
+   and responses for the zone.
 
    This document defines a subdomain hierarchy for providers to enable
    this feature as well as a mechanism for interoperable transfers to
@@ -158,17 +162,16 @@ Internet-Draft           Private DNS Subdomains               March 2019
    Only the owner and the administrative domain provider know the true
    contents of the records.  Intermediary resolvers or forwarders simply
    see the encrypted questions or answers as normal cacheable questions
-   or response records and can effectively return cache results like any
-   other records without being able to understand the true contents.
 
 
 
-
-
-Pusateri               Expires September 10, 2019               [Page 3]
+Pusateri               Expires September 12, 2019               [Page 3]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
+
+   or response records and can effectively return cache results like any
+   other records without being able to understand the true contents.
 
    The QTYPE of a question and the RRTYPE in a response record are also
    encoded in the name to further increase privacy and reduce record
@@ -214,18 +217,19 @@ Internet-Draft           Private DNS Subdomains               March 2019
    email verification, or some other method not described here which may
    include enabling the service on a per-user basis.
 
-   The user can then create the subdomain by sending an UPDATE [RFC2136]
-   to the MNAME of the SOA record for "_pvt.<domain>." containing a new
-   KEY record for the zone "<user>._pvt.<domain>."  The KEY record
-   contains a public key that will later be used by the administrative
 
 
 
-Pusateri               Expires September 10, 2019               [Page 4]
+
+Pusateri               Expires September 12, 2019               [Page 4]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
 
+   The user can then create the subdomain by sending an UPDATE [RFC2136]
+   to the MNAME of the SOA record for "_pvt.<domain>." containing a new
+   KEY record for the zone "<user>._pvt.<domain>."  The KEY record
+   contains a public key that will later be used by the administrative
    domain to verify signed requests and send encrypted responses.  If
    this zone already exists, the UPDATE fails with RCODE YXRRSet.  If
    the zone does not exist, the user has successfully claimed the zone
@@ -270,17 +274,16 @@ Internet-Draft           Private DNS Subdomains               March 2019
    a SIG(0) record [RFC2931].  The owner MUST sign the encrypted form of
    the records in the Update section in order for the receiver to
    validate the UPDATE message before attempting to decrypt the records
-   contained within.  More information about authenticating UPDATE
-   messages can be found in [RFC3007].
 
 
 
-
-
-Pusateri               Expires September 10, 2019               [Page 5]
+Pusateri               Expires September 12, 2019               [Page 5]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
+
+   contained within.  More information about authenticating UPDATE
+   messages can be found in [RFC3007].
 
    The administrative domain provider can then use the private key
    associated with the public key stored in the KEY record at
@@ -330,10 +333,7 @@ Internet-Draft           Private DNS Subdomains               March 2019
 
 
 
-
-
-
-Pusateri               Expires September 10, 2019               [Page 6]
+Pusateri               Expires September 12, 2019               [Page 6]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
@@ -372,13 +372,14 @@ Internet-Draft           Private DNS Subdomains               March 2019
 
 5.1.  Signatures in Responses
 
-   Responses MUST NOT be signed because the receiver is not able to
-   determine which public key to use to verify the signature.  The
-   response could come from the authoritative server or it could come
-   from an intermediate caching resolver.
+   Response SIG(0) signature verification is difficult because the
+   receiver is not able to determine which public key to use to verify
+   the signature.  The response could come from the authoritative server
+   or it could come from an intermediate caching resolver.
 
-   Future work will attempt to provide a way to ensure response
-   integrity.
+   Future work will attempt to provide a way to ensure response message
+   integrity if that which is already provided by DNSSEC [RFC4034] is
+   deemed insufficient.
 
 5.2.  Encrypted Records
 
@@ -388,8 +389,7 @@ Internet-Draft           Private DNS Subdomains               March 2019
 
 
 
-
-Pusateri               Expires September 10, 2019               [Page 7]
+Pusateri               Expires September 12, 2019               [Page 7]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
@@ -423,7 +423,16 @@ Internet-Draft           Private DNS Subdomains               March 2019
    Since responses are not signed, there is a opportunity for the
    message contents to be tampered with.  Fake records can not be
    created but records could be removed from the Answer section and
-   header fields could be modified.
+   header fields could be modified.  This can be partly alleviated
+   through the use of DNSSEC.  If the "ENCR" records which make up an
+   RRset have DNSSEC RRSIG signatures, the receiver can determine if
+   elements of the set have been tampered with.  It cannot detect if the
+   entire set has been removed.
+
+8.  IANA Considerations
+
+   This document defines a new DNS Resource Record Type named "ENCR"
+   described as an Encrypted Resource Record with value TBD.
 
 
 
@@ -436,23 +445,14 @@ Internet-Draft           Private DNS Subdomains               March 2019
 
 
 
-
-
-
-
-
-
-
-
-
-Pusateri               Expires September 10, 2019               [Page 8]
+Pusateri               Expires September 12, 2019               [Page 8]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
 
-8.  References
+9.  References
 
-8.1.  Normative References
+9.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -488,7 +488,12 @@ Internet-Draft           Private DNS Subdomains               March 2019
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/info/rfc8446>.
 
-8.2.  Informative References
+9.2.  Informative References
+
+   [RFC4034]  Arends, R., Austein, R., Larson, M., Massey, D., and S.
+              Rose, "Resource Records for the DNS Security Extensions",
+              RFC 4034, DOI 10.17487/RFC4034, March 2005,
+              <https://www.rfc-editor.org/info/rfc4034>.
 
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
@@ -496,12 +501,7 @@ Internet-Draft           Private DNS Subdomains               March 2019
 
 
 
-
-
-
-
-
-Pusateri               Expires September 10, 2019               [Page 9]
+Pusateri               Expires September 12, 2019               [Page 9]
 
 Internet-Draft           Private DNS Subdomains               March 2019
 
@@ -557,4 +557,4 @@ Author's Address
 
 
 
-Pusateri               Expires September 10, 2019              [Page 10]
+Pusateri               Expires September 12, 2019              [Page 10]

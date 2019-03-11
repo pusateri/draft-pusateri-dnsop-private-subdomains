@@ -120,9 +120,9 @@ Responses include the encrypted version of the question (with the subdomain in c
 
 ## Signatures in Responses
 
-Responses MUST NOT be signed because the receiver is not able to determine which public key to use to verify the signature. The response could come from the authoritative server or it could come from an intermediate caching resolver.
+Response SIG(0) signature verification is difficult because the receiver is not able to determine which public key to use to verify the signature. The response could come from the authoritative server or it could come from an intermediate caching resolver.
 
-Future work will attempt to provide a way to ensure response integrity.
+Future work will attempt to provide a way to ensure response message integrity if that which is already provided by DNSSEC {{?RFC4034}} is deemed insufficient.
 
 ## Encrypted Records
 
@@ -142,7 +142,11 @@ Show RDATA packet format here.
 
 # Security Considerations
 
-Since responses are not signed, there is a opportunity for the message contents to be tampered with. Fake records can not be created but records could be removed from the Answer section and header fields could be modified.
+Since responses are not signed, there is a opportunity for the message contents to be tampered with. Fake records can not be created but records could be removed from the Answer section and header fields could be modified. This can be partly alleviated through the use of DNSSEC. If the `ENCR` records which make up an RRset have DNSSEC RRSIG signatures, the receiver can determine if elements of the set have been tampered with. It cannot detect if the entire set has been removed.
+
+# IANA Considerations
+
+This document defines a new DNS Resource Record Type named `ENCR` described as an Encrypted Resource Record with value TBD.
 
 ----
 
