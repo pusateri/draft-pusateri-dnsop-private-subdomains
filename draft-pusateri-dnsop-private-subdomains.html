@@ -377,23 +377,16 @@
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
 <link href="#rfc.section.2" rel="Chapter" title="2 Requirements Language">
 <link href="#rfc.section.3" rel="Chapter" title="3 Subdomain Operations">
-<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Domain name encryption">
-<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Zone Creation">
-<link href="#rfc.section.3.3" rel="Chapter" title="3.3 Adding / Removing Resource Records">
-<link href="#rfc.section.3.4" rel="Chapter" title="3.4 Zone Destruction">
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Zone Creation">
+<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Adding / Removing Resource Records">
+<link href="#rfc.section.3.3" rel="Chapter" title="3.3 Zone Destruction">
 <link href="#rfc.section.4" rel="Chapter" title="4 Querying Resource Records">
 <link href="#rfc.section.4.1" rel="Chapter" title="4.1 Signed Requests">
-<link href="#rfc.section.4.2" rel="Chapter" title="4.2 Encrypted Questions">
 <link href="#rfc.section.5" rel="Chapter" title="5 Responses">
-<link href="#rfc.section.5.1" rel="Chapter" title="5.1 Signatures in Responses">
-<link href="#rfc.section.5.2" rel="Chapter" title="5.2 Encrypted Records">
-<link href="#rfc.section.6" rel="Chapter" title="6 Encrypted Resource Record (ENCR)">
-<link href="#rfc.section.6.1" rel="Chapter" title="6.1 Encrypted Resource Record RDATA format">
-<link href="#rfc.section.7" rel="Chapter" title="7 Security Considerations">
-<link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
-<link href="#rfc.references" rel="Chapter" title="9 References">
-<link href="#rfc.references.1" rel="Chapter" title="9.1 Normative References">
-<link href="#rfc.references.2" rel="Chapter" title="9.2 Informative References">
+<link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations">
+<link href="#rfc.references" rel="Chapter" title="7 References">
+<link href="#rfc.references.1" rel="Chapter" title="7.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="7.2 Informative References">
 <link href="#rfc.authors" rel="Chapter">
 
 
@@ -402,7 +395,7 @@
 
   <meta name="dct.creator" content="Pusateri, T." />
   <meta name="dct.identifier" content="urn:ietf:id:draft-pusateri-dnsop-private-subdomains-00" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-11" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-12" />
   <meta name="dct.abstract" content="This document describes a method of providing private DNS subdomains such that each subdomain can be shared among multiple devices of a single owner or group. A private subdomain can be used for sharing personal services while increasing privacy and limiting knowledge of scarce resources." />
   <meta name="description" content="This document describes a method of providing private DNS subdomains such that each subdomain can be shared among multiple devices of a single owner or group. A private subdomain can be used for sharing personal services while increasing privacy and limiting knowledge of scarce resources." />
 
@@ -423,10 +416,10 @@
 </tr>
 <tr>
 <td class="left">Intended status: Experimental</td>
-<td class="right">March 11, 2019</td>
+<td class="right">March 12, 2019</td>
 </tr>
 <tr>
-<td class="left">Expires: September 12, 2019</td>
+<td class="left">Expires: September 13, 2019</td>
 <td class="right"></td>
 </tr>
 
@@ -443,7 +436,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on September 12, 2019.</p>
+<p>This Internet-Draft will expire on September 13, 2019.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -459,39 +452,25 @@
 </li>
 <li>3.   <a href="#rfc.section.3">Subdomain Operations</a>
 </li>
-<ul><li>3.1.   <a href="#rfc.section.3.1">Domain name encryption</a>
+<ul><li>3.1.   <a href="#rfc.section.3.1">Zone Creation</a>
 </li>
-<li>3.2.   <a href="#rfc.section.3.2">Zone Creation</a>
+<li>3.2.   <a href="#rfc.section.3.2">Adding / Removing Resource Records</a>
 </li>
-<li>3.3.   <a href="#rfc.section.3.3">Adding / Removing Resource Records</a>
-</li>
-<li>3.4.   <a href="#rfc.section.3.4">Zone Destruction</a>
+<li>3.3.   <a href="#rfc.section.3.3">Zone Destruction</a>
 </li>
 </ul><li>4.   <a href="#rfc.section.4">Querying Resource Records</a>
 </li>
 <ul><li>4.1.   <a href="#rfc.section.4.1">Signed Requests</a>
 </li>
-<li>4.2.   <a href="#rfc.section.4.2">Encrypted Questions</a>
-</li>
 </ul><li>5.   <a href="#rfc.section.5">Responses</a>
 </li>
-<ul><li>5.1.   <a href="#rfc.section.5.1">Signatures in Responses</a>
+<li>6.   <a href="#rfc.section.6">Security Considerations</a>
 </li>
-<li>5.2.   <a href="#rfc.section.5.2">Encrypted Records</a>
+<li>7.   <a href="#rfc.references">References</a>
 </li>
-</ul><li>6.   <a href="#rfc.section.6">Encrypted Resource Record (ENCR)</a>
+<ul><li>7.1.   <a href="#rfc.references.1">Normative References</a>
 </li>
-<ul><li>6.1.   <a href="#rfc.section.6.1">Encrypted Resource Record RDATA format</a>
-</li>
-</ul><li>7.   <a href="#rfc.section.7">Security Considerations</a>
-</li>
-<li>8.   <a href="#rfc.section.8">IANA Considerations</a>
-</li>
-<li>9.   <a href="#rfc.references">References</a>
-</li>
-<ul><li>9.1.   <a href="#rfc.references.1">Normative References</a>
-</li>
-<li>9.2.   <a href="#rfc.references.2">Informative References</a>
+<li>7.2.   <a href="#rfc.references.2">Informative References</a>
 </li>
 </ul><li><a href="#rfc.authors">Author's Address</a>
 </li>
@@ -506,7 +485,7 @@
 <p id="rfc.section.1.p.2">Some services are meant to be advertised and used freely by devices on the link but other services are restricted to an owner or group and these services are announced publicly as a side effect of the current service discovery deployment.</p>
 <p id="rfc.section.1.p.3">This document defines a method for collaborating devices to share private services with one another but without revealing the existence of these services in a public way. This provides an additional layer of privacy protection for an individual&#8217;s devices or those of a defined group sharing a common purpose.</p>
 <p id="rfc.section.1.p.4">The additional privacy is achieved by creating private subdomains that require a private key for bidirectional access to DNS queries and responses for the zone.</p>
-<p id="rfc.section.1.p.5">This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and techniques for private authenticated queries and responses.</p>
+<p id="rfc.section.1.p.5">This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and requires private authenticated queries.</p>
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#requirements-language" id="requirements-language">Requirements Language</a>
 </h1>
@@ -517,84 +496,47 @@
 <p id="rfc.section.3.p.1">An administrative domain provider will enable private subdomains by creating a base subdomain at <samp>_pvt.&lt;domain&gt;.</samp> In addition to the SOA and NS records, a public KEY record <a href="#RFC2535" class="xref">[RFC2535]</a>, <a href="#RFC3445" class="xref">[RFC3445]</a> MUST be created at the apex which is openly available for queries. This public key will be used for message encryption relating to the maintenance of private subdomains.</p>
 <p id="rfc.section.3.p.2">The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers. Only algorithms that can be used for encryption are eligible for use in the KEY record for this purpose.</p>
 <h1 id="rfc.section.3.1">
-<a href="#rfc.section.3.1">3.1.</a> <a href="#dname" id="dname">Domain name encryption</a>
+<a href="#rfc.section.3.1">3.1.</a> <a href="#zone-creation" id="zone-creation">Zone Creation</a>
 </h1>
-<p id="rfc.section.3.1.p.1">Domain names in questions, responses, and updates MUST provide the subdomain name in clear text to correctly route the query and cache the responses in resolvers along the path. However, labels before the subdomain name are encrypted to provide privacy. Therefore, domain names must be encoded and decoded at the sender and receiver of the DNS message.</p>
-<p id="rfc.section.3.1.p.2">Only the owner and the administrative domain provider know the true contents of the records. Intermediary resolvers or forwarders simply see the encrypted questions or answers as normal cacheable questions or response records and can effectively return cache results like any other records without being able to understand the true contents.</p>
-<p id="rfc.section.3.1.p.3">The QTYPE of a question and the RRTYPE in a response record are also encoded in the name to further increase privacy and reduce record type optimizations that might assume particular formats of RDATA for known record types. For example, if an <samp>A</samp> record type was used, some implementations MAY assume 4-byte RDATA and get confused by an encrypted version that contains more bytes. Therefore, a Encrypted Resource Record type (ENCR) is defined in <a href="#ENCR" class="xref">Section 6</a> which is returned in all answers. The original QTYPE and RRTYPE are prepended to the original QNAME in the question or owner name in the response before encrypting. The QTYPE is then always set to ENCR and the answers are naturally returned with this type as well.</p>
-<p id="rfc.section.3.1.p.4">The subdomain suffix is first removed and the remaining portion of the original domain name is prepended with the QTYPE or RRTYPE and encrypted with the public key found in the apex of the <samp>_pvt.&lt;domain&gt;.</samp> Next the subdomain labels are appended in clear text to the encrypted portion of the name and type.</p>
-<p id="rfc.section.3.1.p.5">Since there is a limit of 63 octets to a label, it is possible that the encrypted portion of the name could surpass this limit. Further work and experimentation MAY be needed to arrive at the best solution to this issue and this document will be updated at that time. The current solution is to include an initial byte after the length of the first label containing the number of labels that make up the encrypted portion of the name. Those labels will be concatenated (excluding the length bytes) to form the encrypted portion of the name. This encoding and decoding is only performed by the querier and the authoritative server responding to the query and is transparent to intermediate forwarders and resolvers.</p>
+<p id="rfc.section.3.1.p.1">A subdomain is created by the owner in an administrative domain for which the owner has a trusted relationship. For instance, if a user has services provided by an administrative domain and that user has been assigned a user name or account at that domain, the user could then uniquely claim ownership of the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp></p>
+<p id="rfc.section.3.1.p.2">The administrative domain can use any means it finds sufficient to verify the trusted relationship with the user including RADIUS, AAA, email verification, or some other method not described here which may include enabling the service on a per-user basis.</p>
+<p id="rfc.section.3.1.p.3">The user can then create the subdomain by sending an UPDATE <a href="#RFC2136" class="xref">[RFC2136]</a> to the MNAME of the SOA record for <samp>_pvt.&lt;domain&gt;.</samp> containing a new KEY record for the zone <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests and send encrypted responses. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</p>
+<p id="rfc.section.3.1.p.4">In response, appropriate NS records for <samp>&lt;user&gt;</samp> will be created in the <samp>_pvtr.&lt;domain&gt;.</samp> and a new SOA record <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> with appropriate record fields will also be created along side the new KEY record submitted by the user. The authoritative servers for the new <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> will be managed by the administrative domain provider.</p>
+<p id="rfc.section.3.1.p.5">At this point, the owner has knowledge of the public key of <samp>_pvt.&lt;domain&gt;.</samp> and the administrative domain has knowledge of the public key of <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> All subsequent operations for the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> use encrypted records based on the public key of the message receiver. All operations by the owner MUST included a signature using the private key which can be verified by the receiver using the owners public key. In this way, the records are only ever updated or revealed to an authorized user.</p>
 <h1 id="rfc.section.3.2">
-<a href="#rfc.section.3.2">3.2.</a> <a href="#zone-creation" id="zone-creation">Zone Creation</a>
+<a href="#rfc.section.3.2">3.2.</a> <a href="#adding-removing-resource-records" id="adding-removing-resource-records">Adding / Removing Resource Records</a>
 </h1>
-<p id="rfc.section.3.2.p.1">A subdomain is created by the owner in an administrative domain for which the owner has a trusted relationship. For instance, if a user has services provided by an administrative domain and that user has been assigned a user name or account at that domain, the user could then uniquely claim ownership of the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp></p>
-<p id="rfc.section.3.2.p.2">The administrative domain can use any means it finds sufficient to verify the trusted relationship with the user including RADIUS, AAA, email verification, or some other method not described here which may include enabling the service on a per-user basis.</p>
-<p id="rfc.section.3.2.p.3">The user can then create the subdomain by sending an UPDATE <a href="#RFC2136" class="xref">[RFC2136]</a> to the MNAME of the SOA record for <samp>_pvt.&lt;domain&gt;.</samp> containing a new KEY record for the zone <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests and send encrypted responses. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</p>
-<p id="rfc.section.3.2.p.4">In response, appropriate NS records for <samp>&lt;user&gt;</samp> will be created in the <samp>_pvtr.&lt;domain&gt;.</samp> and a new SOA record <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> with appropriate record fields will also be created along side the new KEY record submitted by the user. The authoritative servers for the new <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> will be managed by the administrative domain provider.</p>
-<p id="rfc.section.3.2.p.5">At this point, the owner has knowledge of the public key of <samp>_pvt.&lt;domain&gt;.</samp> and the administrative domain has knowledge of the public key of <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> All subsequent operations for the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> use encrypted records based on the public key of the message receiver. All operations by the owner MUST included a signature using the private key which can be verified by the receiver using the owners public key. In this way, the records are only ever updated or revealed to an authorized user.</p>
+<p id="rfc.section.3.2.p.1">Once the zone is created, the user can begin adding or removing records to the <samp>&lt;user&gt;._pvt.&lt;domain&gt;</samp> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain&#8217;s public KEY found at <samp>_pvt.&lt;domain&gt;.</samp></p>
+<p id="rfc.section.3.2.p.2">To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner&#8217;s private key and the signature included in the additional data section in the form of a SIG(0) record <a href="#RFC2931" class="xref">[RFC2931]</a>. The owner MUST sign the encrypted form of the records in the Update section in order for the receiver to validate the UPDATE message before attempting to decrypt the records contained within. More information about authenticating UPDATE messages can be found in <a href="#RFC3007" class="xref">[RFC3007]</a>.</p>
+<p id="rfc.section.3.2.p.3">The administrative domain provider can then use the private key associated with the public key stored in the KEY record at <samp>_pvt.&lt;domain&gt;.</samp> to individually decrypt the resource records contained in the Update section. If the records can be successfully decrypted, they are added to, or removed from, the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> zone. If the records cannot be decrypted, the receiver MUST return FORMERR. See section 2.5.2 of <a href="#RFC2136" class="xref">[RFC2136]</a> for the specifics of adding or removing records in the Update section.</p>
+<p id="rfc.section.3.2.p.4">In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. The entire UPDATE message MUST be signed by placing the SIG(0) signature record in the Additional data section.</p>
+<p id="rfc.section.3.2.p.5">This is useful for changing the algorithm or key length for the public/private key pair.</p>
+<p id="rfc.section.3.2.p.6">If instead the private key associated with the public key in the KEY record has been compromised, the user should contact the administrative domain out of band to verify authenticity and replace the KEY record through a process established by the provider.</p>
 <h1 id="rfc.section.3.3">
-<a href="#rfc.section.3.3">3.3.</a> <a href="#adding-removing-resource-records" id="adding-removing-resource-records">Adding / Removing Resource Records</a>
+<a href="#rfc.section.3.3">3.3.</a> <a href="#zone-destruction" id="zone-destruction">Zone Destruction</a>
 </h1>
-<p id="rfc.section.3.3.p.1">Once the zone is created, the user can begin adding or removing records to the <samp>&lt;user&gt;._pvt.&lt;domain&gt;</samp> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain&#8217;s public KEY found at <samp>_pvt.&lt;domain&gt;.</samp> In order to encrypt the records to be added, they will be encoded in a new resource record type defined below called an Encrypted Resource Record <a href="#ENCR" class="xref">Section 6</a>. These records use the same CLASS as the encapsulated record and contain an algorithm type to indicate how they can be decrypted.</p>
-<p id="rfc.section.3.3.p.2">To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner&#8217;s private key and the signature included in the additional data section in the form of a SIG(0) record <a href="#RFC2931" class="xref">[RFC2931]</a>. The owner MUST sign the encrypted form of the records in the Update section in order for the receiver to validate the UPDATE message before attempting to decrypt the records contained within. More information about authenticating UPDATE messages can be found in <a href="#RFC3007" class="xref">[RFC3007]</a>.</p>
-<p id="rfc.section.3.3.p.3">The administrative domain provider can then use the private key associated with the public key stored in the KEY record at <samp>_pvt.&lt;domain&gt;.</samp> to individually decrypt the resource records contained in the Update section. If the records can be successfully decrypted, they are added to, or removed from, the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> zone. If the records cannot be decrypted, the receiver MUST return FORMERR. See section 2.5.2 of <a href="#RFC2136" class="xref">[RFC2136]</a> for the specifics of adding or removing records in the Update section.</p>
-<p id="rfc.section.3.3.p.4">In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. The entire UPDATE message MUST be signed by placing the SIG(0) signature record in the Additional data section.</p>
-<p id="rfc.section.3.3.p.5">This is useful for changing the algorithm or key length for the public/private key pair.</p>
-<p id="rfc.section.3.3.p.6">If instead the private key associated with the public key in the KEY record has been compromised, the user should contact the administrative domain out of band to verify authenticity and replace the KEY record through a process established by the provider.</p>
-<h1 id="rfc.section.3.4">
-<a href="#rfc.section.3.4">3.4.</a> <a href="#zone-destruction" id="zone-destruction">Zone Destruction</a>
-</h1>
-<p id="rfc.section.3.4.p.1">When the owner is ready to destroy the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <samp>&lt;user&gt;</samp> in the <samp>_pvt.&lt;domain&gt;</samp> zone. The KEY record containing the public key is not encrypted.</p>
-<p id="rfc.section.3.4.p.2">The owner is free to destroy and re-create the subdomain as needed for as long as the relationship continues with the administrative domain.</p>
+<p id="rfc.section.3.3.p.1">When the owner is ready to destroy the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <samp>&lt;user&gt;</samp> in the <samp>_pvt.&lt;domain&gt;</samp> zone. The KEY record containing the public key is not encrypted.</p>
+<p id="rfc.section.3.3.p.2">The owner is free to destroy and re-create the subdomain as needed for as long as the relationship continues with the administrative domain.</p>
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#querying-resource-records" id="querying-resource-records">Querying Resource Records</a>
 </h1>
-<p id="rfc.section.4.p.1">The question section of a DNS query contains the QNAME, QTYPE, and QCLASS. The original QNAME and QTYPE are encoded into a new encrypted form and used as the QNAME of the outgoing query. The outgoing QTYPE is always <samp>ENCR</samp>. The outgoing QCLASS is not encoded and contains the class of the original query.</p>
+<p id="rfc.section.4.p.1">Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an rcode of REFUSED.</p>
 <h1 id="rfc.section.4.1">
 <a href="#rfc.section.4.1">4.1.</a> <a href="#signed-requests" id="signed-requests">Signed Requests</a>
 </h1>
-<p id="rfc.section.4.1.p.1">All queries MUST be signed with the private key of the owner. The signature MUST be in the Additional records section in the form of a SIG(0) record. If a query is received that is not signed or cannot be verified with the public key in the KEY record at the apex of the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, a response containing the question as received with an RCODE of REFUSED with no answers MUST be returned. The Authority section of the response MUST contain the SOA record for the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> in clear text.</p>
-<p id="rfc.section.4.1.p.2">Authoritative servers MUST verify the signature in the query before decoding the QNAME and returning the results. It is not necessary for intermediate caching resolvers to verify the signature in the query since any cached answers are already encrypted.</p>
-<h1 id="rfc.section.4.2">
-<a href="#rfc.section.4.2">4.2.</a> <a href="#encrypted-questions" id="encrypted-questions">Encrypted Questions</a>
-</h1>
-<p id="rfc.section.4.2.p.1">When a query is received by the authoritative server for the zone, the private key corresponding to the public key stored in the KEY record at <samp>_pvt.&lt;domain&gt;</samp> is used to decrypt the question. Only the authoritative servers have the ability to decrypt the query. The original question is recreated and matching records are found.</p>
+<p id="rfc.section.4.1.p.1">All queries MUST be signed with the private key of the owner. The signature MUST be in the Additional records section in the form of a SIG(0) record. If a query is received that is not signed or cannot be verified with the public key in the KEY record at the apex of the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, a response containing the question as received with an RCODE of REFUSED with no answers MUST be returned. The Authority section of the response MUST contain the SOA record for the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp></p>
+<p id="rfc.section.4.1.p.2">Authoritative servers MUST verify the signature in the query before returning the results.</p>
 <h1 id="rfc.section.5">
 <a href="#rfc.section.5">5.</a> <a href="#responses" id="responses">Responses</a>
 </h1>
-<p id="rfc.section.5.p.1">Responses include the encrypted version of the question (with the subdomain in clear text), along with any matching answers represented as Encrypted Resource Records <a href="#ENCR" class="xref">Section 6</a>. Likewise, the owner name for each record in the answer section includes the encrypted label(s) and the subdomain part in clear text.</p>
-<h1 id="rfc.section.5.1">
-<a href="#rfc.section.5.1">5.1.</a> <a href="#signatures-in-responses" id="signatures-in-responses">Signatures in Responses</a>
-</h1>
-<p id="rfc.section.5.1.p.1">Response SIG(0) signature verification is difficult because the receiver is not able to determine which public key to use to verify the signature. The response could come from the authoritative server or it could come from an intermediate caching resolver.</p>
-<p id="rfc.section.5.1.p.2">Future work will attempt to provide a way to ensure response message integrity if that which is already provided by DNSSEC <a href="#RFC4034" class="xref">[RFC4034]</a> is deemed insufficient.</p>
-<h1 id="rfc.section.5.2">
-<a href="#rfc.section.5.2">5.2.</a> <a href="#encrypted-records" id="encrypted-records">Encrypted Records</a>
-</h1>
-<p id="rfc.section.5.2.p.1">Each resource record included in the response is encrypted by the authoritative server using the public key in the KEY record at the apex of <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> These responses can be cached by resolvers and returned  in subsequent queries using normal DNS operations.</p>
-<p id="rfc.section.5.2.p.2">The encrypted owner name of an <samp>ENCR</samp> record is decrypted to obtain the actual owner name and RRTYPE. The <samp>ENCR</samp> RDATA is decrypted to obtain the actual RDATA of the original record. The format of the <samp>ENCR</samp> RDATA provides algorithm information sufficient for decryption.</p>
 <h1 id="rfc.section.6">
-<a href="#rfc.section.6">6.</a> <a href="#ENCR" id="ENCR">Encrypted Resource Record (ENCR)</a>
+<a href="#rfc.section.6">6.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
 </h1>
-<p id="rfc.section.6.p.1">The format of an ENCR record is defined here for use in the IANA registry of DNS Resource Record Types. It contains the encrypted output of an existing resource record along with the algorithm used for encryption. The combination of the contents of this resource record along with the public key in the KEY record is sufficient to decode the encrypted contents to obtain the origin resource record.</p>
-<p id="rfc.section.6.p.2">List encryption algorithms here.</p>
-<h1 id="rfc.section.6.1">
-<a href="#rfc.section.6.1">6.1.</a> <a href="#encrypted-resource-record-rdata-format" id="encrypted-resource-record-rdata-format">Encrypted Resource Record RDATA format</a>
-</h1>
-<p id="rfc.section.6.1.p.1">Show RDATA packet format here.</p>
-<h1 id="rfc.section.7">
-<a href="#rfc.section.7">7.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
-</h1>
-<p id="rfc.section.7.p.1">Since responses are not signed, there is a opportunity for the message contents to be tampered with. Fake records can not be created but records could be removed from the Answer section and header fields could be modified. This can be partly alleviated through the use of DNSSEC. If the <samp>ENCR</samp> records which make up an RRset have DNSSEC RRSIG signatures, the receiver can determine if elements of the set have been tampered with. It cannot detect if the entire set has been removed.</p>
-<h1 id="rfc.section.8">
-<a href="#rfc.section.8">8.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
-</h1>
-<p id="rfc.section.8.p.1">This document defines a new DNS Resource Record Type named <samp>ENCR</samp> described as an Encrypted Resource Record with value TBD.</p>
 <p></p>
 <h1 id="rfc.references">
-<a href="#rfc.references">9.</a> References</h1>
+<a href="#rfc.references">7.</a> References</h1>
 <h1 id="rfc.references.1">
-<a href="#rfc.references.1">9.1.</a> Normative References</h1>
+<a href="#rfc.references.1">7.1.</a> Normative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="RFC2119">[RFC2119]</b></td>
@@ -638,13 +580,8 @@
 </tr>
 </tbody></table>
 <h1 id="rfc.references.2">
-<a href="#rfc.references.2">9.2.</a> Informative References</h1>
+<a href="#rfc.references.2">7.2.</a> Informative References</h1>
 <table><tbody>
-<tr>
-<td class="reference"><b id="RFC4034">[RFC4034]</b></td>
-<td class="top">
-<a>Arends, R.</a>, <a>Austein, R.</a>, <a>Larson, M.</a>, <a>Massey, D.</a> and <a>S. Rose</a>, "<a href="https://tools.ietf.org/html/rfc4034">Resource Records for the DNS Security Extensions</a>", RFC 4034, DOI 10.17487/RFC4034, March 2005.</td>
-</tr>
 <tr>
 <td class="reference"><b id="RFC6763">[RFC6763]</b></td>
 <td class="top">

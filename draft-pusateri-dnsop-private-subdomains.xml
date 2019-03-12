@@ -13,7 +13,6 @@
 <!ENTITY RFC3007 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3007.xml">
 <!ENTITY RFC7558 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7558.xml">
 <!ENTITY RFC6763 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6763.xml">
-<!ENTITY RFC4034 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4034.xml">
 ]>
 
 <?rfc toc="yes"?>
@@ -70,7 +69,7 @@
 
 <t>The additional privacy is achieved by creating private subdomains that require a private key for bidirectional access to DNS queries and responses for the zone.</t>
 
-<t>This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and techniques for private authenticated queries and responses.</t>
+<t>This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and requires private authenticated queries.</t>
 
 </section>
 <section anchor="requirements-language" title="Requirements Language">
@@ -90,19 +89,6 @@ lower case as plain English words, absent their normative meanings.</t>
 
 <t>The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers. Only algorithms that can be used for encryption are eligible for use in the KEY record for this purpose.</t>
 
-<section anchor="dname" title="Domain name encryption">
-
-<t>Domain names in questions, responses, and updates MUST provide the subdomain name in clear text to correctly route the query and cache the responses in resolvers along the path. However, labels before the subdomain name are encrypted to provide privacy. Therefore, domain names must be encoded and decoded at the sender and receiver of the DNS message.</t>
-
-<t>Only the owner and the administrative domain provider know the true contents of the records. Intermediary resolvers or forwarders simply see the encrypted questions or answers as normal cacheable questions or response records and can effectively return cache results like any other records without being able to understand the true contents.</t>
-
-<t>The QTYPE of a question and the RRTYPE in a response record are also encoded in the name to further increase privacy and reduce record type optimizations that might assume particular formats of RDATA for known record types. For example, if an <spanx style="verb">A</spanx> record type was used, some implementations MAY assume 4-byte RDATA and get confused by an encrypted version that contains more bytes. Therefore, a Encrypted Resource Record type (ENCR) is defined in <xref target="ENCR"/> which is returned in all answers. The original QTYPE and RRTYPE are prepended to the original QNAME in the question or owner name in the response before encrypting. The QTYPE is then always set to ENCR and the answers are naturally returned with this type as well.</t>
-
-<t>The subdomain suffix is first removed and the remaining portion of the original domain name is prepended with the QTYPE or RRTYPE and encrypted with the public key found in the apex of the <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> Next the subdomain labels are appended in clear text to the encrypted portion of the name and type.</t>
-
-<t>Since there is a limit of 63 octets to a label, it is possible that the encrypted portion of the name could surpass this limit. Further work and experimentation MAY be needed to arrive at the best solution to this issue and this document will be updated at that time. The current solution is to include an initial byte after the length of the first label containing the number of labels that make up the encrypted portion of the name. Those labels will be concatenated (excluding the length bytes) to form the encrypted portion of the name. This encoding and decoding is only performed by the querier and the authoritative server responding to the query and is transparent to intermediate forwarders and resolvers.</t>
-
-</section>
 <section anchor="zone-creation" title="Zone Creation">
 
 <t>A subdomain is created by the owner in an administrative domain for which the owner has a trusted relationship. For instance, if a user has services provided by an administrative domain and that user has been assigned a user name or account at that domain, the user could then uniquely claim ownership of the subdomain <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx></t>
@@ -118,8 +104,7 @@ lower case as plain English words, absent their normative meanings.</t>
 </section>
 <section anchor="adding-removing-resource-records" title="Adding / Removing Resource Records">
 
-<t>Once the zone is created, the user can begin adding or removing records to the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;</spanx> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain’s public KEY found at <spanx style="verb">_pvt.&lt;domain&gt;.</spanx>
-In order to encrypt the records to be added, they will be encoded in a new resource record type defined below called an Encrypted Resource Record <xref target="ENCR"/>. These records use the same CLASS as the encapsulated record and contain an algorithm type to indicate how they can be decrypted.</t>
+<t>Once the zone is created, the user can begin adding or removing records to the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;</spanx> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain’s public KEY found at <spanx style="verb">_pvt.&lt;domain&gt;.</spanx></t>
 
 <t>To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner’s private key and the signature included in the additional data section in the form of a SIG(0) record <xref target="RFC2931"/>. The owner MUST sign the encrypted form of the records in the Update section in order for the receiver to validate the UPDATE message before attempting to decrypt the records contained within. More information about authenticating UPDATE messages can be found in <xref target="RFC3007"/>.</t>
 
@@ -142,60 +127,20 @@ In order to encrypt the records to be added, they will be encoded in a new resou
 </section>
 <section anchor="querying-resource-records" title="Querying Resource Records">
 
-<t>The question section of a DNS query contains the QNAME, QTYPE, and QCLASS. The original QNAME and QTYPE are encoded into a new encrypted form and used as the QNAME of the outgoing query. The outgoing QTYPE is always <spanx style="verb">ENCR</spanx>. The outgoing QCLASS is not encoded and contains the class of the original query.</t>
+<t>Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an rcode of REFUSED.</t>
 
 <section anchor="signed-requests" title="Signed Requests">
 
-<t>All queries MUST be signed with the private key of the owner. The signature MUST be in the Additional records section in the form of a SIG(0) record. If a query is received that is not signed or cannot be verified with the public key in the KEY record at the apex of the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx>, a response containing the question as received with an RCODE of REFUSED with no answers MUST be returned. The Authority section of the response MUST contain the SOA record for the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> in clear text.</t>
+<t>All queries MUST be signed with the private key of the owner. The signature MUST be in the Additional records section in the form of a SIG(0) record. If a query is received that is not signed or cannot be verified with the public key in the KEY record at the apex of the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx>, a response containing the question as received with an RCODE of REFUSED with no answers MUST be returned. The Authority section of the response MUST contain the SOA record for the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx></t>
 
-<t>Authoritative servers MUST verify the signature in the query before decoding the QNAME and returning the results. It is not necessary for intermediate caching resolvers to verify the signature in the query since any cached answers are already encrypted.</t>
-
-</section>
-<section anchor="encrypted-questions" title="Encrypted Questions">
-
-<t>When a query is received by the authoritative server for the zone, the private key corresponding to the public key stored in the KEY record at <spanx style="verb">_pvt.&lt;domain&gt;</spanx> is used to decrypt the question. Only the authoritative servers have the ability to decrypt the query. The original question is recreated and matching records are found.</t>
+<t>Authoritative servers MUST verify the signature in the query before returning the results.</t>
 
 </section>
 </section>
 <section anchor="responses" title="Responses">
 
-<t>Responses include the encrypted version of the question (with the subdomain in clear text), along with any matching answers represented as Encrypted Resource Records <xref target="ENCR"/>. Likewise, the owner name for each record in the answer section includes the encrypted label(s) and the subdomain part in clear text.</t>
-
-<section anchor="signatures-in-responses" title="Signatures in Responses">
-
-<t>Response SIG(0) signature verification is difficult because the receiver is not able to determine which public key to use to verify the signature. The response could come from the authoritative server or it could come from an intermediate caching resolver.</t>
-
-<t>Future work will attempt to provide a way to ensure response message integrity if that which is already provided by DNSSEC <xref target="RFC4034"/> is deemed insufficient.</t>
-
-</section>
-<section anchor="encrypted-records" title="Encrypted Records">
-
-<t>Each resource record included in the response is encrypted by the authoritative server using the public key in the KEY record at the apex of <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> These responses can be cached by resolvers and returned  in subsequent queries using normal DNS operations.</t>
-
-<t>The encrypted owner name of an <spanx style="verb">ENCR</spanx> record is decrypted to obtain the actual owner name and RRTYPE. The <spanx style="verb">ENCR</spanx> RDATA is decrypted to obtain the actual RDATA of the original record. The format of the <spanx style="verb">ENCR</spanx> RDATA provides algorithm information sufficient for decryption.</t>
-
-</section>
-</section>
-<section anchor="ENCR" title="Encrypted Resource Record (ENCR)">
-
-<t>The format of an ENCR record is defined here for use in the IANA registry of DNS Resource Record Types. It contains the encrypted output of an existing resource record along with the algorithm used for encryption. The combination of the contents of this resource record along with the public key in the KEY record is sufficient to decode the encrypted contents to obtain the origin resource record.</t>
-
-<t>List encryption algorithms here.</t>
-
-<section anchor="encrypted-resource-record-rdata-format" title="Encrypted Resource Record RDATA format">
-
-<t>Show RDATA packet format here.</t>
-
-</section>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
-
-<t>Since responses are not signed, there is a opportunity for the message contents to be tampered with. Fake records can not be created but records could be removed from the Answer section and header fields could be modified. This can be partly alleviated through the use of DNSSEC. If the <spanx style="verb">ENCR</spanx> records which make up an RRset have DNSSEC RRSIG signatures, the receiver can determine if elements of the set have been tampered with. It cannot detect if the entire set has been removed.</t>
-
-</section>
-<section anchor="iana-considerations" title="IANA Considerations">
-
-<t>This document defines a new DNS Resource Record Type named <spanx style="verb">ENCR</spanx> described as an Encrypted Resource Record with value TBD.</t>
 
 <t><vspace blankLines='999' /></t>
 
@@ -224,7 +169,6 @@ In order to encrypt the records to be added, they will be encoded in a new resou
 
 &RFC7558;
 &RFC6763;
-&RFC4034;
 
 
     </references>
@@ -235,125 +179,85 @@ In order to encrypt the records to be added, they will be encoded in a new resou
   </back>
 
 <!-- ##markdown-source:
-H4sIAAO/hlwAA51b23LbyLV951d07IexKyQjW76qUkkYSc6oYks2KdecyUvU
-BJpkRyDAoAHJHJf/Jd9yvuzsW18AkrJzHmZMUUD3vq699u7WaDQaNLYpzIn6
-WNs73Rh1djlTs3aeV2ttSzfIq6zUa/h9XutFM9q0Dh6q7SgvXbUZbfilkQsv
-jI6OBjl8daKeHz17O7Cb+kQ1deua50dHb4+eD3Rt9Im6KGGR0jSD++UJ7nj1
-Uf1S1be2XKq/1VW7Gdzex4dGZ7j1INPNiTJfNgPX6DL/py6qEnZZ6MKZwSCr
-cnj5RLXNYvRmsLEnA6VGqqky+tdt17VZOP5c1Q39MNBts6pqehL+UwqkP1HX
-Y/VRdKQvWfnrat39uqphs8+lXixsYeHrnL51sLIBKR89oh8z22xP1FQXxi5X
-/E2Vw2qXp+r561dHb+SrtmxqeO7zbEJfbFak2O+fqSdvn719qt68ej16dnx8
-RL80YOTiRHk3/GWuy+W/xlm1HgxGo5HScxBBZ81gcL2yToHz2rUpG5Ubl9V2
-bpzSam1A7VxVC7WpqzuLdlObxPnRl/AxW6lmpRtlNHwKv1GZLtXcKLcCd+ZK
-rytYY90Wjd0UBja7sxlsBTto5WB5+K66L00NVlNLdO9YTcKWO4u2DpZcwKO4
-OglnaleVulDO1Lzy/crCmrbMIJhckD/bKggMVdi1bfDL27K6L0y+NCiJy3Sd
-GVUbV7XwwY3ZYGub5wXEz2OMtrrK26yxVTkYzAx9UK/Gr/Dtr1//PH13+vrl
-yzffvqkVeLOA/xoHtjFh79q6W1KajMiigkAl+Dcz6AWnUMnC6Fo15kszVr+Q
-GrBGbdRKO1DelGCyAq25ANfBavBzBtI6CBOUr4CQjpbz5gBDFC35EeUB+6EU
-Bqyz3ZASaBUMdpDBQhbhV80K/LBcqev3M1Dud6DcmxcvXoFyaHjYq2T93ZCW
-BI1Gs7OeMmyTV69fHcNr8NTameIOpFnrrQIlb4OctoRF17xvFHXeNqqsGnYX
-eBwU48BRzXaDgQpC34HnWQpT6jn4MupMOvhYwyD6F0iMi+im0dntMEYNZjAv
-Z3O0wMLCb2KUYb4g8MAeTQZRMavWiWkhviFhdElLQ3DqHGRqLL6MK/IqkPTF
-Vs23MfJZuMKWt6RnhT7uLgqB2NQ2E80h8rsZQqvDW64ni3dBDhAwL2wG+2pH
-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
+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
 
 -->
 
