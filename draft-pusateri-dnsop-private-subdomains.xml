@@ -19,7 +19,7 @@
 <?rfc symrefs="yes"?>
 <?rfc sortrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-pusateri-dnsop-private-subdomains-00" category="exp">
+<rfc ipr="trust200902" docName="draft-pusateri-dnsop-private-subdomains-01" category="exp">
 
   <front>
     <title>Private DNS Subdomains</title>
@@ -179,10 +179,10 @@ lower case as plain English words, absent their normative meanings.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAOE3h1wAA5Va23LbRhJ9x1fMKg9JaklGsnxVpbLLleREtdYlolTZ7Es8
+H4sIAKo4h1wAA5Va23LbRhJ9x1fMKg9JaklGsnxVpbLLleREtdYlolTZ7Es8
 BIbiRCDAYADJTMr/st+yX7anu2cGw4sc74NtEgRm+nL69OmBh8Nh1tq2NEfq
 qrEPujXq5GKiJt20qBfaVi4r6rzSC/xeNHrWDpedw02NHRaVq5fDpTw0dPGB
-4f5+VuDSkXq2f/Ams8vmSLVN59pn+/tv9p9lujH6SJ1VWKQybfZ4d0Q7Xl6p
+4f5BVuDSkXq2f/Ams8vmSLVN59pn+/tv9p9lujH6SJ1VWKQybfZ4d0Q7Xl6p
 n+rm3lZ36vum7pbZ/WN/0/CEts5y3R4p82GZuVZXxS+6rCvsMtOlM1mW1wUe
 PlJdOxu+zpb2KFNqqNo653/datGYmZPPddPyl0x37bxu+E78UQrWH6mbkbry
 PvJFcf6mXqxfrhtsdlvp2cyWFpcLvuqwsoGVe3v8Nbft6khd69LYu7lcqQus
@@ -257,7 +257,7 @@ qqvhukFurYvBu4b+HwRF6vr07e3k9IQO8KnqJ8LR1/4YBdMjMB123iDyngAT
 gvTB5zx6gR5LKjy/Te3Bn88TjRxezWathIa4VfsTTF8J3si6SVp8HMA+j7t3
 NNYnKU3Ho4zNIuVIcj9NLJUzh8qfKvV5kB8qQqB7pEkwxExSZ/wJzdjjarU5
 iEQj1uhtxynfJ5xB0nceUvCSyTlqOgsET5EQL5/F4BAE2NWVbXjH58/h+J1R
-OMo/xiWq6vDaiP5zyFD+i8hU5/dZ9j8R8AL1KiUAAA==
+OMo/xiWq6vDaiP5zyFD+i8hU5/dZ9j83zhHeKiUAAA==
 
 -->
 
