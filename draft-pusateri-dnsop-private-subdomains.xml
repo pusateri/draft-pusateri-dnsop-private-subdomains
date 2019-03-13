@@ -11,6 +11,10 @@
 <!ENTITY RFC2136 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml">
 <!ENTITY RFC2931 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2931.xml">
 <!ENTITY RFC3007 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3007.xml">
+<!ENTITY RFC8310 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8310.xml">
+<!ENTITY RFC7525 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7525.xml">
+<!ENTITY RFC7673 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7673.xml">
+<!ENTITY RFC6066 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6066.xml">
 <!ENTITY RFC7558 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7558.xml">
 <!ENTITY RFC6763 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6763.xml">
 ]>
@@ -69,7 +73,7 @@
 
 <t>The additional privacy is achieved by creating private subdomains that require a private key for bidirectional access to DNS queries and responses for the zone.</t>
 
-<t>This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and requires private authenticated queries.</t>
+<t>This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and private authenticated queries.</t>
 
 </section>
 <section anchor="requirements-language" title="Requirements Language">
@@ -87,7 +91,7 @@ lower case as plain English words, absent their normative meanings.</t>
 
 <t>An administrative domain provider will enable private subdomains by creating a base subdomain at <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> In addition to the SOA and NS records, a public KEY record <xref target="RFC2535"/>, <xref target="RFC3445"/> MUST be created at the apex which is openly available for queries. This public key will be used for message encryption relating to the maintenance of private subdomains.</t>
 
-<t>The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers. Only algorithms that can be used for encryption are eligible for use in the KEY record for this purpose.</t>
+<t>The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers.</t>
 
 <section anchor="zone-creation" title="Zone Creation">
 
@@ -95,22 +99,22 @@ lower case as plain English words, absent their normative meanings.</t>
 
 <t>The administrative domain can use any means it finds sufficient to verify the trusted relationship with the user including RADIUS, AAA, email verification, or some other method not described here which may include enabling the service on a per-user basis.</t>
 
-<t>The user can then create the subdomain by sending an UPDATE <xref target="RFC2136"/> to the MNAME of the SOA record for <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> containing a new KEY record for the zone <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests and send encrypted responses. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</t>
+<t>The user can then create the subdomain by sending an UPDATE <xref target="RFC2136"/> to the MNAME of the SOA record for <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> containing a new KEY record for the zone <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</t>
 
 <t>In response, appropriate NS records for <spanx style="verb">&lt;user&gt;</spanx> will be created in the <spanx style="verb">_pvtr.&lt;domain&gt;.</spanx> and a new SOA record <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> with appropriate record fields will also be created along side the new KEY record submitted by the user. The authoritative servers for the new <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> will be managed by the administrative domain provider.</t>
 
-<t>At this point, the owner has knowledge of the public key of <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> and the administrative domain has knowledge of the public key of <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> All subsequent operations for the subdomain <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> use encrypted records based on the public key of the message receiver. All operations by the owner MUST included a signature using the private key which can be verified by the receiver using the owners public key. In this way, the records are only ever updated or revealed to an authorized user.</t>
+<t>At this point, the owner has knowledge of the public key of <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> and the administrative domain has knowledge of the public key of <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> All subsequent operations for the subdomain <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> are signed with the private key of the sender. The administrative domain provider can verify the sender should have access to the records in the private zone and the owner can verify the received records are authentic and haven’t been tampered with.</t>
 
 </section>
 <section anchor="adding-removing-resource-records" title="Adding / Removing Resource Records">
 
-<t>Once the zone is created, the user can begin adding or removing records to the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;</spanx> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain’s public KEY found at <spanx style="verb">_pvt.&lt;domain&gt;.</spanx></t>
+<t>Once the zone is created, the user can begin adding or removing records to the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;</spanx> subdomain through additional UPDATE messages for the zone.</t>
 
-<t>To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner’s private key and the signature included in the additional data section in the form of a SIG(0) record <xref target="RFC2931"/>. The owner MUST sign the encrypted form of the records in the Update section in order for the receiver to validate the UPDATE message before attempting to decrypt the records contained within. More information about authenticating UPDATE messages can be found in <xref target="RFC3007"/>.</t>
+<t>To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner’s private key and the signature included in the additional data section in the form of a SIG(0) record <xref target="RFC2931"/>. More information about authenticating UPDATE messages can be found in <xref target="RFC3007"/>.</t>
 
-<t>The administrative domain provider can then use the private key associated with the public key stored in the KEY record at <spanx style="verb">_pvt.&lt;domain&gt;.</spanx> to individually decrypt the resource records contained in the Update section. If the records can be successfully decrypted, they are added to, or removed from, the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> zone. If the records cannot be decrypted, the receiver MUST return FORMERR. See section 2.5.2 of <xref target="RFC2136"/> for the specifics of adding or removing records in the Update section.</t>
+<t>If the administrative domain provider can verify the signature with the subdomain owner’s public key, the records are added to, or removed from, the <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx> zone. See section 2.5.2 of <xref target="RFC2136"/> for the specifics of adding or removing records in the Update section.</t>
 
-<t>In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. The entire UPDATE message MUST be signed by placing the SIG(0) signature record in the Additional data section.</t>
+<t>In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. Then the message is signed with the subdomain owner’s private key.</t>
 
 <t>This is useful for changing the algorithm or key length for the public/private key pair.</t>
 
@@ -119,7 +123,7 @@ lower case as plain English words, absent their normative meanings.</t>
 </section>
 <section anchor="zone-destruction" title="Zone Destruction">
 
-<t>When the owner is ready to destroy the subdomain <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <spanx style="verb">&lt;user&gt;</spanx> in the <spanx style="verb">_pvt.&lt;domain&gt;</spanx> zone. The KEY record containing the public key is not encrypted.</t>
+<t>When the owner is ready to destroy the subdomain <spanx style="verb">&lt;user&gt;._pvt.&lt;domain&gt;.</spanx>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <spanx style="verb">&lt;user&gt;</spanx> in the <spanx style="verb">_pvt.&lt;domain&gt;</spanx> zone.</t>
 
 <t>The owner is free to destroy and re-create the subdomain as needed for as long as the relationship continues with the administrative domain.</t>
 
@@ -127,7 +131,7 @@ lower case as plain English words, absent their normative meanings.</t>
 </section>
 <section anchor="querying-resource-records" title="Querying Resource Records">
 
-<t>Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an rcode of REFUSED.</t>
+<t>Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an RCODE containing REFUSED.</t>
 
 <section anchor="signed-requests" title="Signed Requests">
 
@@ -141,6 +145,16 @@ lower case as plain English words, absent their normative meanings.</t>
 
 </section>
 <section anchor="security-considerations" title="Security Considerations">
+
+<t>The Strict Privacy Usage Profile for DNS over TLS is REQUIRED for connections to the authoritative name servers <xref target="RFC8310"/>. Since this is a new protocol, transition mechanisms from the Opportunistic Privacy profile are unnecessary.</t>
+
+<t>See Section 9 of <xref target="RFC8310"/> for additional recommendations for various versions of TLS usage.</t>
+
+<t>DNSSEC is RECOMMENDED for the authentication of authoritative DNS servers. TLS alone does not provide complete security. TLS certificate verification can provide reasonable assurance that the client is really communicating with the server associated with the desired host name, but since the desired host name is learned via a DNS query, if the DNS response is subverted then the client may have a secure connection to a rogue server. DNSSEC can provide added confidence that the response has not been subverted.</t>
+
+<t>Deployment recommendations on the appropriate key lengths and cypher suites are beyond the scope of this document.  Please refer to TLS Recommendations <xref target="RFC7525"/> for the best current practices. Consider that best practices only exist for a snapshot in time and recommendations will continue to change. Updated versions or errata may exist for these recommendations.</t>
+
+<t>The authoritative server connection endpoint SHOULD be authenticated using DANE TLSA records for the associated DNS record used to determine the name (SOA, SRV, etc).  This associates the target’s name with a trusted TLS certificate <xref target="RFC7673"/>.  This procedure uses the TLS Sever Name Indication (SNI) extension <xref target="RFC6066"/> to inform the server of the name the client has authenticated through the use of TLSA records. Therefore, if the DNS record used to obtain the name passes DNSSEC validation and a TLSA record matching the target name is useable, an SNI extension must be used for the target name to ensure the client is connecting to the server it has authenticated.  If the target name does not have a usable TLSA record, then the use of the SNI extension is optional. See Usage Profiles for DNS over TLS and DNS over DTLS <xref target="RFC8310"/> for more information on authenticating domain names.</t>
 
 <t><vspace blankLines='999' /></t>
 
@@ -161,6 +175,10 @@ lower case as plain English words, absent their normative meanings.</t>
 &RFC2136;
 &RFC2931;
 &RFC3007;
+&RFC8310;
+&RFC7525;
+&RFC7673;
+&RFC6066;
 
 
     </references>
@@ -179,85 +197,96 @@ lower case as plain English words, absent their normative meanings.</t>
   </back>
 
 <!-- ##markdown-source:
-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
+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
+NhAJWVhTJEuQdtQ9eZc+S5+s38wAICTL2VzsRqIJYH6+mflmoPF4nHW2K82R
+umztve6MOjmfqVk/L+qVtpXLijqv9Ap/L1q96MZN7/BSa8dF5epm3MiisYsL
+xnv7WYFHR+rl3v67zDbtkera3nUv9/be7b3MdGv0kTqrsElluuzh9ohOvLhU
+P9btna1u1V/bum+yu4fhpfEJHZ3lujtS5lOTuU5Xxc+6rCucstClM1mW1wUW
+H6m+W4zfZo09ypQaq67O+V+3XrVm4eRz3Xb8JdN9t6xbfhP/KQXpj9T1RF16
+HfmhKH9drzYf1y0Ou6n0YmFLi8cFP3XY2UDKZ8/4a2679ZG60qWxt0t5UhfY
+7fxYvXxzuPfWP+qrrsV7N7MpP2iWrNjv99Xzd/vvXqi3h2/G+wcHe/xHAyOX
+Ryq44c9zXd3+MsnrVZaNx2Ol5xBB512WXS+tU3BevzJVpwrj8tbOjVNarQzU
+LlS9UE1b31uym2oS5w++xMd8qbql7pTR+BT/onJdqblRbgl3Fkqvauyx6svO
+NqXBYfc2x1E4QSuH7fGsfqhMC6upW3LvRE3jkY827R22XOBV2p2FM62rK10q
+Z1rZ+WFpsaetcoDJRfnztQIwVGlXtqOHd1X9UJri1pAkLtdtblRrXN3jg5uI
+wVa2KErg5xtCW1sXfd7ZusqymeEP6nBySKt//fVPV98fv3n9+u3nz2oJb5b4
+r3OwjYlnt9bdsdJsRBEVAlXwb27IC06RkqXRrerMp26ifmQ1sEdr1FI7KG8q
+mKwkay7gOuyG7zmkdYAJyVcC0oPlgjlgiLJnP5I8sB9JYWCddcNKkFUI7JDB
+IoroUbeEH26X6vr9DMr9Dsq9ffXqEMqR4XFWJfq7EW8Jjcazky1lxCaHbw4P
+sAxvrZwp7yHNSq8VlLyLctoKm67k3EHUed+pqu7EXfA4FBPgqG7dEFAh9D08
+L1KYSs/hy0Fn1iFgjUD0CySmTXTX6fxuNKCGIli2swVZYGHxlwFlFC+UeHBG
+lwMVs3qVmBb4RsDoircGOHUBmTpLi2lH2QVBX67VfD0gX4QrbXXHetbk481N
+AcSutbnXHMjfjBDeHavclizBBQVSwLy0Oc7VjsOsMMosFmQEOJ9Oz/u2pdgP
+UCysy2tIT2I2Zb0mL04eJ4qFrdI0IXgoSz2vW81hFZSE2Bz/j/H4YLslbEDS
+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
+nH/MJL9dG8sv2OY6v8uy/wM30baHySkAAA==
 
 -->
 

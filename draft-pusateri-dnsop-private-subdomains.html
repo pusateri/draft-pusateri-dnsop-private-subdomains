@@ -485,7 +485,7 @@
 <p id="rfc.section.1.p.2">Some services are meant to be advertised and used freely by devices on the link but other services are restricted to an owner or group and these services are announced publicly as a side effect of the current service discovery deployment.</p>
 <p id="rfc.section.1.p.3">This document defines a method for collaborating devices to share private services with one another but without revealing the existence of these services in a public way. This provides an additional layer of privacy protection for an individual&#8217;s devices or those of a defined group sharing a common purpose.</p>
 <p id="rfc.section.1.p.4">The additional privacy is achieved by creating private subdomains that require a private key for bidirectional access to DNS queries and responses for the zone.</p>
-<p id="rfc.section.1.p.5">This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and requires private authenticated queries.</p>
+<p id="rfc.section.1.p.5">This document defines a subdomain hierarchy for providers to enable this feature as well as a mechanism for interoperable transfers to and from the subdomain. This includes creating and destroying the subdomains, adding and removing records through DNS Update, and private authenticated queries.</p>
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#requirements-language" id="requirements-language">Requirements Language</a>
 </h1>
@@ -494,33 +494,33 @@
 <a href="#rfc.section.3">3.</a> <a href="#subdomain-operations" id="subdomain-operations">Subdomain Operations</a>
 </h1>
 <p id="rfc.section.3.p.1">An administrative domain provider will enable private subdomains by creating a base subdomain at <samp>_pvt.&lt;domain&gt;.</samp> In addition to the SOA and NS records, a public KEY record <a href="#RFC2535" class="xref">[RFC2535]</a>, <a href="#RFC3445" class="xref">[RFC3445]</a> MUST be created at the apex which is openly available for queries. This public key will be used for message encryption relating to the maintenance of private subdomains.</p>
-<p id="rfc.section.3.p.2">The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers. Only algorithms that can be used for encryption are eligible for use in the KEY record for this purpose.</p>
+<p id="rfc.section.3.p.2">The Zone bit for all KEY records used in this specification MUST be set to 0. The protocol value for the KEY record is set to DNSSEC (3) and the algorithm value is taken from the available algorithms defined in the IANA DNS Security Algorithm Numbers.</p>
 <h1 id="rfc.section.3.1">
 <a href="#rfc.section.3.1">3.1.</a> <a href="#zone-creation" id="zone-creation">Zone Creation</a>
 </h1>
 <p id="rfc.section.3.1.p.1">A subdomain is created by the owner in an administrative domain for which the owner has a trusted relationship. For instance, if a user has services provided by an administrative domain and that user has been assigned a user name or account at that domain, the user could then uniquely claim ownership of the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp></p>
 <p id="rfc.section.3.1.p.2">The administrative domain can use any means it finds sufficient to verify the trusted relationship with the user including RADIUS, AAA, email verification, or some other method not described here which may include enabling the service on a per-user basis.</p>
-<p id="rfc.section.3.1.p.3">The user can then create the subdomain by sending an UPDATE <a href="#RFC2136" class="xref">[RFC2136]</a> to the MNAME of the SOA record for <samp>_pvt.&lt;domain&gt;.</samp> containing a new KEY record for the zone <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests and send encrypted responses. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</p>
+<p id="rfc.section.3.1.p.3">The user can then create the subdomain by sending an UPDATE <a href="#RFC2136" class="xref">[RFC2136]</a> to the MNAME of the SOA record for <samp>_pvt.&lt;domain&gt;.</samp> containing a new KEY record for the zone <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> The KEY record contains a public key that will later be used by the administrative domain to verify signed requests. If this zone already exists, the UPDATE fails with RCODE YXRRSet. If the zone does not exist, the user has successfully claimed the zone and all subsequent operations by the user will require knowledge of the private key associated with the registered public key in the KEY record. The user can distribute this private key to any or all of its devices for access to the private subdomain.</p>
 <p id="rfc.section.3.1.p.4">In response, appropriate NS records for <samp>&lt;user&gt;</samp> will be created in the <samp>_pvtr.&lt;domain&gt;.</samp> and a new SOA record <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> with appropriate record fields will also be created along side the new KEY record submitted by the user. The authoritative servers for the new <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> will be managed by the administrative domain provider.</p>
-<p id="rfc.section.3.1.p.5">At this point, the owner has knowledge of the public key of <samp>_pvt.&lt;domain&gt;.</samp> and the administrative domain has knowledge of the public key of <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> All subsequent operations for the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> use encrypted records based on the public key of the message receiver. All operations by the owner MUST included a signature using the private key which can be verified by the receiver using the owners public key. In this way, the records are only ever updated or revealed to an authorized user.</p>
+<p id="rfc.section.3.1.p.5">At this point, the owner has knowledge of the public key of <samp>_pvt.&lt;domain&gt;.</samp> and the administrative domain has knowledge of the public key of <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> All subsequent operations for the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> are signed with the private key of the sender. The administrative domain provider can verify the sender should have access to the records in the private zone and the owner can verify the received records are authentic and haven&#8217;t been tampered with.</p>
 <h1 id="rfc.section.3.2">
 <a href="#rfc.section.3.2">3.2.</a> <a href="#adding-removing-resource-records" id="adding-removing-resource-records">Adding / Removing Resource Records</a>
 </h1>
-<p id="rfc.section.3.2.p.1">Once the zone is created, the user can begin adding or removing records to the <samp>&lt;user&gt;._pvt.&lt;domain&gt;</samp> subdomain through additional UPDATE messages for the zone. The subdomain in the Zone section of the UPDATE appears as usual in plain text. However, individual records in the Update section of the message are encrypted with the administrative domain&#8217;s public KEY found at <samp>_pvt.&lt;domain&gt;.</samp></p>
-<p id="rfc.section.3.2.p.2">To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner&#8217;s private key and the signature included in the additional data section in the form of a SIG(0) record <a href="#RFC2931" class="xref">[RFC2931]</a>. The owner MUST sign the encrypted form of the records in the Update section in order for the receiver to validate the UPDATE message before attempting to decrypt the records contained within. More information about authenticating UPDATE messages can be found in <a href="#RFC3007" class="xref">[RFC3007]</a>.</p>
-<p id="rfc.section.3.2.p.3">The administrative domain provider can then use the private key associated with the public key stored in the KEY record at <samp>_pvt.&lt;domain&gt;.</samp> to individually decrypt the resource records contained in the Update section. If the records can be successfully decrypted, they are added to, or removed from, the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> zone. If the records cannot be decrypted, the receiver MUST return FORMERR. See section 2.5.2 of <a href="#RFC2136" class="xref">[RFC2136]</a> for the specifics of adding or removing records in the Update section.</p>
-<p id="rfc.section.3.2.p.4">In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. The entire UPDATE message MUST be signed by placing the SIG(0) signature record in the Additional data section.</p>
+<p id="rfc.section.3.2.p.1">Once the zone is created, the user can begin adding or removing records to the <samp>&lt;user&gt;._pvt.&lt;domain&gt;</samp> subdomain through additional UPDATE messages for the zone.</p>
+<p id="rfc.section.3.2.p.2">To ensure zone additions and deletions are from the subdomain owner, the UPDATE message must be signed with the owner&#8217;s private key and the signature included in the additional data section in the form of a SIG(0) record <a href="#RFC2931" class="xref">[RFC2931]</a>. More information about authenticating UPDATE messages can be found in <a href="#RFC3007" class="xref">[RFC3007]</a>.</p>
+<p id="rfc.section.3.2.p.3">If the administrative domain provider can verify the signature with the subdomain owner&#8217;s public key, the records are added to, or removed from, the <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp> zone. See section 2.5.2 of <a href="#RFC2136" class="xref">[RFC2136]</a> for the specifics of adding or removing records in the Update section.</p>
+<p id="rfc.section.3.2.p.4">In order to change the KEY record at the apex of the zone, the old KEY record should be added to the Prerequisite section and the new KEY record in the Update section. Then the message is signed with the subdomain owner&#8217;s private key.</p>
 <p id="rfc.section.3.2.p.5">This is useful for changing the algorithm or key length for the public/private key pair.</p>
 <p id="rfc.section.3.2.p.6">If instead the private key associated with the public key in the KEY record has been compromised, the user should contact the administrative domain out of band to verify authenticity and replace the KEY record through a process established by the provider.</p>
 <h1 id="rfc.section.3.3">
 <a href="#rfc.section.3.3">3.3.</a> <a href="#zone-destruction" id="zone-destruction">Zone Destruction</a>
 </h1>
-<p id="rfc.section.3.3.p.1">When the owner is ready to destroy the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <samp>&lt;user&gt;</samp> in the <samp>_pvt.&lt;domain&gt;</samp> zone. The KEY record containing the public key is not encrypted.</p>
+<p id="rfc.section.3.3.p.1">When the owner is ready to destroy the subdomain <samp>&lt;user&gt;._pvt.&lt;domain&gt;.</samp>, it can do so by deleting the KEY record at the apex through an UPDATE message. As above, the UPDATE message additional data section MUST contain a SIG(0) signature over the entire message. Once validated, the zone will be removed along with the NS records for <samp>&lt;user&gt;</samp> in the <samp>_pvt.&lt;domain&gt;</samp> zone.</p>
 <p id="rfc.section.3.3.p.2">The owner is free to destroy and re-create the subdomain as needed for as long as the relationship continues with the administrative domain.</p>
 <h1 id="rfc.section.4">
 <a href="#rfc.section.4">4.</a> <a href="#querying-resource-records" id="querying-resource-records">Querying Resource Records</a>
 </h1>
-<p id="rfc.section.4.p.1">Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an rcode of REFUSED.</p>
+<p id="rfc.section.4.p.1">Only the owner and the administrative domain provider know the true contents of the records. Queries must be made through direct connections to an authoritative server for the subdomain over a TLS connection. If the authoritative server also provides connections over UDP or TCP without TLS, queries for records in private zones over non-TLS connections MUST return an RCODE containing REFUSED.</p>
 <h1 id="rfc.section.4.1">
 <a href="#rfc.section.4.1">4.1.</a> <a href="#signed-requests" id="signed-requests">Signed Requests</a>
 </h1>
@@ -532,6 +532,11 @@
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
 </h1>
+<p id="rfc.section.6.p.1">The Strict Privacy Usage Profile for DNS over TLS is REQUIRED for connections to the authoritative name servers <a href="#RFC8310" class="xref">[RFC8310]</a>. Since this is a new protocol, transition mechanisms from the Opportunistic Privacy profile are unnecessary.</p>
+<p id="rfc.section.6.p.2">See Section 9 of <a href="#RFC8310" class="xref">[RFC8310]</a> for additional recommendations for various versions of TLS usage.</p>
+<p id="rfc.section.6.p.3">DNSSEC is RECOMMENDED for the authentication of authoritative DNS servers. TLS alone does not provide complete security. TLS certificate verification can provide reasonable assurance that the client is really communicating with the server associated with the desired host name, but since the desired host name is learned via a DNS query, if the DNS response is subverted then the client may have a secure connection to a rogue server. DNSSEC can provide added confidence that the response has not been subverted.</p>
+<p id="rfc.section.6.p.4">Deployment recommendations on the appropriate key lengths and cypher suites are beyond the scope of this document.  Please refer to TLS Recommendations <a href="#RFC7525" class="xref">[RFC7525]</a> for the best current practices. Consider that best practices only exist for a snapshot in time and recommendations will continue to change. Updated versions or errata may exist for these recommendations.</p>
+<p id="rfc.section.6.p.5">The authoritative server connection endpoint SHOULD be authenticated using DANE TLSA records for the associated DNS record used to determine the name (SOA, SRV, etc).  This associates the target&#8217;s name with a trusted TLS certificate <a href="#RFC7673" class="xref">[RFC7673]</a>.  This procedure uses the TLS Sever Name Indication (SNI) extension <a href="#RFC6066" class="xref">[RFC6066]</a> to inform the server of the name the client has authenticated through the use of TLSA records. Therefore, if the DNS record used to obtain the name passes DNSSEC validation and a TLSA record matching the target name is useable, an SNI extension must be used for the target name to ensure the client is connecting to the server it has authenticated.  If the target name does not have a usable TLSA record, then the use of the SNI extension is optional. See Usage Profiles for DNS over TLS and DNS over DTLS <a href="#RFC8310" class="xref">[RFC8310]</a> for more information on authenticating domain names.</p>
 <p></p>
 <h1 id="rfc.references">
 <a href="#rfc.references">7.</a> References</h1>
@@ -569,9 +574,29 @@
 <a>Massey, D.</a> and <a>S. Rose</a>, "<a href="https://tools.ietf.org/html/rfc3445">Limiting the Scope of the KEY Resource Record (RR)</a>", RFC 3445, DOI 10.17487/RFC3445, December 2002.</td>
 </tr>
 <tr>
+<td class="reference"><b id="RFC6066">[RFC6066]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7525">[RFC7525]</b></td>
+<td class="top">
+<a>Sheffer, Y.</a>, <a>Holz, R.</a> and <a>P. Saint-Andre</a>, "<a href="https://tools.ietf.org/html/rfc7525">Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)</a>", BCP 195, RFC 7525, DOI 10.17487/RFC7525, May 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7673">[RFC7673]</b></td>
+<td class="top">
+<a>Finch, T.</a>, <a>Miller, M.</a> and <a>P. Saint-Andre</a>, "<a href="https://tools.ietf.org/html/rfc7673">Using DNS-Based Authentication of Named Entities (DANE) TLSA Records with SRV Records</a>", RFC 7673, DOI 10.17487/RFC7673, October 2015.</td>
+</tr>
+<tr>
 <td class="reference"><b id="RFC8174">[RFC8174]</b></td>
 <td class="top">
 <a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8310">[RFC8310]</b></td>
+<td class="top">
+<a>Dickinson, S.</a>, <a>Gillmor, D.</a> and <a>T. Reddy</a>, "<a href="https://tools.ietf.org/html/rfc8310">Usage Profiles for DNS over TLS and DNS over DTLS</a>", RFC 8310, DOI 10.17487/RFC8310, March 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC8446">[RFC8446]</b></td>
